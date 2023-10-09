@@ -32,8 +32,6 @@ public class MainActivity extends AppCompatActivity {
         locationView = findViewById(R.id.location);
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-
-
         Button button = findViewById(R.id.getLocation);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -51,7 +49,6 @@ public class MainActivity extends AppCompatActivity {
                 locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
                 locationRequest.setInterval(1000); // 1 seconds
                 locationRequest.setFastestInterval(500); // 0.5 seconds
-
                 mFusedLocationClient.requestLocationUpdates(locationRequest, mLocationCallback, Looper.getMainLooper());
             } else {
                 Toast.makeText(this, "Please enable location.", Toast.LENGTH_LONG).show();
@@ -94,5 +91,23 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
+
+    private void stopLocationUpdates() {
+        if (mLocationCallback != null) {
+            mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+            mLocationCallback = null;
+        }
+    }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopLocationUpdates();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        startLocationUpdates();
+    }
 
 }
