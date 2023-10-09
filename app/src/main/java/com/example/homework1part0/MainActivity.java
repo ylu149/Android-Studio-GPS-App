@@ -32,6 +32,10 @@ public class MainActivity extends AppCompatActivity {
         locationView = findViewById(R.id.location);
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
+        if (!checkPermissions()) {
+            requestPermissions();
+        }
+
         Button button = findViewById(R.id.getLocation);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -42,22 +46,18 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("MissingPermission")
     private void startLocationUpdates() {
-        if (checkPermissions()) {
-            if (isLocationEnabled()) {
-                locationView.setText("Getting Location...");
-                LocationRequest locationRequest = LocationRequest.create();
-                locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-                locationRequest.setInterval(1000); // 1 seconds
-                locationRequest.setFastestInterval(500); // 0.5 seconds
-                mFusedLocationClient.requestLocationUpdates(locationRequest, mLocationCallback, Looper.getMainLooper());
-            } else {
-                Toast.makeText(this, "Please enable location.", Toast.LENGTH_LONG).show();
-                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                startActivity(intent);
-            }
+        if (isLocationEnabled()) {
+            locationView.setText("Getting Location...");
+            LocationRequest locationRequest = LocationRequest.create();
+            locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+            locationRequest.setInterval(1000); // 1 seconds
+            locationRequest.setFastestInterval(500); // 0.5 seconds
+            mFusedLocationClient.requestLocationUpdates(locationRequest, mLocationCallback, Looper.getMainLooper());
         } else {
-            requestPermissions();
-        }
+            Toast.makeText(this, "Please enable location.", Toast.LENGTH_LONG).show();
+            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            startActivity(intent);
+            }
     }
 
     //Pulled from online source: https://www.geeksforgeeks.org/how-to-get-user-location-in-android/
@@ -98,16 +98,15 @@ public class MainActivity extends AppCompatActivity {
             mLocationCallback = null;
         }
     }
-    @Override
-    protected void onPause() {
-        super.onPause();
-        stopLocationUpdates();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        startLocationUpdates();
-    }
-
+//    @Override
+//    protected void onPause() {
+//        super.onPause();
+//        stopLocationUpdates();
+//    }
+//
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//        startLocationUpdates();
+//    }
 }
