@@ -24,21 +24,28 @@ import com.google.android.gms.location.LocationServices;
 public class MainActivity extends AppCompatActivity {
     private final int PERMISSION_ID = 238947;
     private FusedLocationProviderClient mFusedLocationClient;
-    TextView locationView;
+    TextView locationView, speedValue;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         locationView = findViewById(R.id.location);
+
+        speedValue = findViewById(R.id.speedValue);
+
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         Button button = findViewById(R.id.getLocation);
+
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 startLocationUpdates();
             }
         });
+
+
     }
+
 
     @SuppressLint("MissingPermission")
     private void startLocationUpdates() {
@@ -87,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
                 Location location = locationResult.getLastLocation();
                 if (location != null) {
                     locationView.setText("Longitude: " + location.getLongitude() + "\nLatitude: " + location.getLatitude());
+                    speedValue.setText(String.valueOf(location.getSpeed()));
                 }
             }
         }

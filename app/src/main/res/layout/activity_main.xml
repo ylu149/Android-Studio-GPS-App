@@ -36,6 +36,26 @@
         android:id="@+id/location"
         />
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Speed:"
+        android:textStyle="bold"
+        android:textSize="30sp"
+        android:layout_marginTop="200dp"
+        android:id="@+id/speedView"
+        />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="0.00"
+        android:textStyle="bold"
+        android:textSize="50sp"
+        android:layout_marginTop="240dp"
+        android:id="@+id/speedValue"
+        />
+
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
