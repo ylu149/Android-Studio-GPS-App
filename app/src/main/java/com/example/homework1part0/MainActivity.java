@@ -39,6 +39,18 @@ public class MainActivity extends AppCompatActivity {
             requestPermissions();
         }
 
+        if (!isLocationEnabled()) {
+            Toast.makeText(this, "Please enable location.", Toast.LENGTH_LONG).show();
+            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            startActivity(intent);
+        }
+
+//        if (!isLocationEnabled()) {
+//            Toast.makeText(this, "Please enable location.", Toast.LENGTH_LONG).show();
+//            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+//            startActivity(intent);
+//        }
+
         Button button = findViewById(R.id.getLocation);
 
         button.setOnClickListener(new View.OnClickListener() {
