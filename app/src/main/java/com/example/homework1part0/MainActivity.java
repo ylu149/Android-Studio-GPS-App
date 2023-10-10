@@ -39,11 +39,6 @@ public class MainActivity extends AppCompatActivity {
             requestPermissions();
         }
 
-        if (!isLocationEnabled()) {
-            Toast.makeText(this, "Please enable location.", Toast.LENGTH_LONG).show();
-            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-            startActivity(intent);
-        }
 
 //        if (!isLocationEnabled()) {
 //            Toast.makeText(this, "Please enable location.", Toast.LENGTH_LONG).show();
@@ -51,11 +46,17 @@ public class MainActivity extends AppCompatActivity {
 //            startActivity(intent);
 //        }
 
-        Button button = findViewById(R.id.getLocation);
-
-        button.setOnClickListener(new View.OnClickListener() {
+        Button locButton = findViewById(R.id.getLocation);
+        locButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 startLocationUpdates();
+            }
+        });
+
+        Button speedButton = findViewById(R.id.getSpeed);
+        speedButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                startSpeedUpdates();
             }
         });
 
@@ -73,10 +74,30 @@ public class MainActivity extends AppCompatActivity {
             locationRequest.setFastestInterval(500); // 0.5 seconds
             mFusedLocationClient.requestLocationUpdates(locationRequest, mLocationCallback, Looper.getMainLooper());
         } else {
-            Toast.makeText(this, "Please enable location.", Toast.LENGTH_LONG).show();
-            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-            startActivity(intent);
+            locationPermHelper();
             }
+    }
+
+    @SuppressLint("MissingPermission")
+    private void startSpeedUpdates(){
+        if (isLocationEnabled()) {
+            speedValue.setText("Getting Speed...");
+            /*finish logic here
+            *Prob need to loop the update and display values
+            *Shouldn't put speedValue in LocationCallback method
+                -Will run when button get speed info is clicked
+             */
+            //speedValue.setText(String.valueOf(location.getSpeed()));
+            //speedValue.setText("80.00"); //testing purposes
+        } else {
+            locationPermHelper();
+        }
+    }
+
+    private void locationPermHelper(){
+        Toast.makeText(this, "Please enable location.", Toast.LENGTH_LONG).show();
+        Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+        startActivity(intent);
     }
 
     //Pulled from online source: https://www.geeksforgeeks.org/how-to-get-user-location-in-android/
@@ -106,7 +127,6 @@ public class MainActivity extends AppCompatActivity {
                 Location location = locationResult.getLastLocation();
                 if (location != null) {
                     locationView.setText("Longitude: " + location.getLongitude() + "\nLatitude: " + location.getLatitude());
-                    speedValue.setText(String.valueOf(location.getSpeed()));
                 }
             }
         }
