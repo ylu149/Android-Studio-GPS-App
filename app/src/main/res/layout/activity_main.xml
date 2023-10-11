@@ -18,14 +18,13 @@
         />
 
     <TextView
+        android:id="@+id/subTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Address:"
-        android:textStyle="bold"
-        android:textSize="30sp"
         android:layout_marginTop="80dp"
-        android:id="@+id/subTitle"
-        />
+        android:text="Address:"
+        android:textSize="30sp"
+        android:textStyle="bold" />
 
     <TextView
         android:layout_width="match_parent"
@@ -39,7 +38,7 @@
 
     <TextView
         android:id="@+id/speedView"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="200dp"
         android:text="Speed:"
@@ -49,10 +48,9 @@
 
     <Spinner
         android:id="@+id/speeds_spinner"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/speedView"
-        android:layout_toEndOf="@+id/speedView"
+        android:layout_marginTop="240dp"
         android:drawSelectorOnTop="true" />
 
     <TextView
@@ -61,7 +59,7 @@
         android:text="0.00"
         android:textStyle="bold"
         android:textSize="50sp"
-        android:layout_marginTop="240dp"
+        android:layout_marginTop="280dp"
         android:id="@+id/speedValue"
         />
 

@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.ColorSpace;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -34,7 +35,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     options: https://www.geeksforgeeks.org/spinner-in-android-using-java-with-example/#
      */
 
-    String[] speedChoices = { "Miles per Hour",
+    String[] speedChoices = { "Meters per Second", "Miles per Hour",
             "Kilometers per Hour", "Feet per Second"};
 
     @Override
@@ -69,15 +70,23 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        Button button = findViewById(R.id.getLocation);
+        Button locationButton = findViewById(R.id.getLocation);
+        Button speedButton = findViewById(R.id.getSpeed);
 
-        button.setOnClickListener(new View.OnClickListener() {
+        locationButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 startLocationUpdates();
             }
         });
 
+        speedButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                startSpeedUpdates();
+            }
+        });
+
     }
+
 
     //Pulled from online source: https://www.geeksforgeeks.org/how-to-get-user-location-in-android/
     private boolean checkPermissions() {
@@ -127,11 +136,57 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 Location location = locationResult.getLastLocation();
                 if (location != null) {
                     locationView.setText("Longitude: " + location.getLongitude() + "\nLatitude: " + location.getLatitude());
+                }
+            }
+        }
+    };
 
-                    float speedMeters = location.getSpeed();
+    /*Copied code from startLocationUpdates, with some fields
+    adjusted to account for different TextView.
+    Not sure if this is correct to use, as the requestLocationUpdates is giving errors,
+    although the app still runs
+     */
+    private void startSpeedUpdates() {
+        if (checkPermissions()) {
+            if (isLocationEnabled()) {
+                speedValue.setText("Getting Speed...");
+                LocationRequest locationRequest = LocationRequest.create();
+                locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+                locationRequest.setInterval(1000); // 1 seconds
+                locationRequest.setFastestInterval(500); // 0.5 seconds
+                mFusedLocationClient.requestLocationUpdates(locationRequest, speedLocationCallback, Looper.getMainLooper());
+            } else {
+                Toast.makeText(this, "Please enable location.", Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                startActivity(intent);
+            }
+        } else {
+            requestPermissions();
+        }
+    }
+
+    /*
+    Also copies code for mLocationCallback, with proper adjustments for speedValue instead
+     */
+
+    private LocationCallback speedLocationCallback = new LocationCallback() {
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            super.onLocationResult(locationResult);
+            if (locationResult != null) {
+                Location location = locationResult.getLastLocation();
+                if (location != null) {
+                    //speedValue.setText(String.valueOf(location.getSpeed()));
+
+                    //float speedMeters = location.getSpeed();
+
+                    //float speedMeters = 2;  //for testing colors
+                    float speedMeters = 6;  //for testing colors
+                    //float speedMeters = 11;  //for testing colors
+
+                    speedValue.setText("6.00"); //test for setting speedValue text
 
                     speedColors(speedMeters);
-                    //speedUnits(speedMeters);
 
                 }
             }
@@ -139,34 +194,40 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     };
 
 
-
-    //Change the speedValue fields color based on the speed calculated
+    /*
+    Change the speedValue fields color based on the speed calculated
+    Color int values obtained from here:
+    https://developer.android.com/reference/android/graphics/Color
+     */
     private void speedColors(float speedMeters) {
         if(speedMeters <= 5) {
-            speedValue.setTextColor(Integer.parseInt("green"));
+            speedValue.setTextColor(-16711936); //int color for green
+
         } else if (speedMeters >5 && speedMeters <= 10) {
-            speedValue.setTextColor(Integer.parseInt("yellow"));
+            speedValue.setTextColor(-256); //int color for yellow
         } else {
-            speedValue.setTextColor(Integer.parseInt("red"));
+            speedValue.setTextColor(-65536); //int color for red
         }
     }
+
+
 
     //Change the Units based on the Spinner item selected
 
     /*
     Commented out for time being while troubleshooting other things
-
-    private void speedUnits(float speedMeters) {
+    */
+    private void speedUnitsCalc(float speedMeters, String spinner_choice) {
 
         double speedCalc;
 
-        if(spinner_choice = "Miles per Hour") {
+        if(spinner_choice == "Miles per Hour") {
             speedCalc = speedMeters * 2.23694;
             speedValue.setText(String.valueOf(speedCalc));
-        } else if (spinner_choice = "Kilometers per Hour") {
+        } else if (spinner_choice == "Kilometers per Hour") {
             speedCalc = speedMeters * 3.60000;
             speedValue.setText(String.valueOf(speedCalc));
-        } else if (spinner_choice = "Feet per Second") {
+        } else if (spinner_choice == "Feet per Second") {
             speedCalc = speedMeters * 3.28084;
             speedValue.setText(String.valueOf(speedCalc));
         } else {
@@ -175,7 +236,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     }
 
-     */
 
     private void stopLocationUpdates() {
         if (mLocationCallback != null) {
@@ -185,17 +245,21 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     /*
-    Unfilled onItemSelected and onNothingSelected Methods for spinners
+    onItemSelected updated to call speedUnitsCalc function whenever object is selected in spinner
+    Note that a dummy variable is fed in for speedMeters for now
+    onNothingSelected Methods for spinners is unfilled
      */
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
+        Spinner test = (Spinner) parent;
+        String test2 = test.getSelectedItem().toString();
+        speedUnitsCalc(2, test2);
     }
 
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
-
+        speedValue.setText("0.00");
     }
 
     /*
