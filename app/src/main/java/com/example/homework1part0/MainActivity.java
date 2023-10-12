@@ -2,7 +2,9 @@ package com.example.homework1part0;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -40,12 +42,6 @@ public class MainActivity extends AppCompatActivity {
             requestPermissions();
         }
 
-        Button locButton = findViewById(R.id.getLocation);
-        locButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                startLocationUpdates();
-            }
-        });
 
         TextView pauseText = findViewById(R.id.pauseFlag);
         Button pauser = findViewById(R.id.pause);
@@ -54,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
                 if(!pauseTest){
                     startLocationUpdates();
                     pauseText.setText("");
+                    pauser.setText("Pause Updates");
                 }
                 else{
                     onClickPause();
@@ -63,6 +60,41 @@ public class MainActivity extends AppCompatActivity {
                 pauseTest = !pauseTest;
             }
         });
+
+        Button locButton = findViewById(R.id.getLocation);
+        locButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                if(!pauseTest){
+                    pauseText.setText("");
+                    pauser.setText("Pause Updates");
+                    pauseTest = !pauseTest;
+                }
+                startLocationUpdates();
+            }
+        });
+
+        Button helpButtoon = findViewById(R.id.help);
+        helpButtoon.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                showHelp();
+            }
+        });
+    }
+
+    private void showHelp() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        String text = "Pause Updates: Pauses getting the users current location and speed.\n" +
+                "\nGet Location and Speed: Gets the user's location and speed every second.\n";
+
+        builder.setMessage(text);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.dismiss();
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
 
