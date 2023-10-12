@@ -61,18 +61,29 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+        Button pauser = findViewById(R.id.pause);
+        pauser.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {onClickPause();}
+        });
+
+
     }
 
 
     @SuppressLint("MissingPermission")
     private void startLocationUpdates() {
         if (isLocationEnabled()) {
-            locationView.setText("Getting Location...");
-            LocationRequest locationRequest = LocationRequest.create();
-            locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-            locationRequest.setInterval(1000); // 1 seconds
-            locationRequest.setFastestInterval(500); // 0.5 seconds
-            mFusedLocationClient.requestLocationUpdates(locationRequest, mLocationCallback, Looper.getMainLooper());
+            if(mLocationCallback != null){
+                locationView.setText("Getting Location...");
+                LocationRequest locationRequest = LocationRequest.create();
+                locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+                locationRequest.setInterval(1000); // 1 seconds
+                locationRequest.setFastestInterval(500); // 0.5 seconds
+                mFusedLocationClient.requestLocationUpdates(locationRequest, mLocationCallback, Looper.getMainLooper());
+            }
+//            else{
+//
+//            }
         } else {
             locationPermHelper();
             }
@@ -127,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
                 Location location = locationResult.getLastLocation();
                 if (location != null) {
                     locationView.setText("Longitude: " + location.getLongitude() + "\nLatitude: " + location.getLatitude());
+                    speedValue.setText(String.valueOf(location.getSpeed()));
                 }
             }
         }
@@ -138,15 +150,8 @@ public class MainActivity extends AppCompatActivity {
             mLocationCallback = null;
         }
     }
-//    @Override
-//    protected void onPause() {
-//        super.onPause();
-//        stopLocationUpdates();
-//    }
-//
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-//        startLocationUpdates();
-//    }
+
+    protected void onClickPause() {
+        stopLocationUpdates();
+    }
 }
