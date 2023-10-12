@@ -32,8 +32,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private final int PERMISSION_ID = 238947;
     private FusedLocationProviderClient mFusedLocationClient;
     TextView locationView, speedValue;
-    boolean pauseTest = true;
-
+    boolean pauseTest = true, godModeFlag = false;
+    private double longSpoof = 100, latSpoof = 40;
     private float speed = 0;
 
     private String spinnerVal = "Meters per second";
@@ -124,15 +124,51 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         Button godButton = findViewById(R.id.godMode);
         godButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                spoofLocLooper(double latitude = 40, double longitude = 100);
+//                spoofLocLooper(40, 100);
+                godModeFlag = !godModeFlag;
+                if (godModeFlag){
+                    godButton.setText("Alt Mode Off");
+                }
+                else {
+                    godButton.setText("Alt Mode On");
+                }
             }
         });
-    }
 
+    }
+/*
+    private void spoofLocLooper(double latitude, double longitude){
+        double incrementLong = 0.1;
+        double incrementLat = 0.1;
+
+        latitude += incrementLat;
+        longitude += incrementLat;
+        spoofLocationAndSpeed(latitude,longitude,0);
+    }
+    @SuppressLint("MissingPermission")
+    private void spoofLocationAndSpeed(double latitude, double longitude, float speed) {
+        if (isLocationEnabled()) {
+            Location spoofedLocation = new Location(LocationManager.GPS_PROVIDER);
+            spoofedLocation.setLatitude(latitude);
+            spoofedLocation.setLongitude(longitude);
+            //spoofedLocation.setSpeed(speed);
+
+            locationView.setText("Longitude: " + spoofedLocation.getLongitude() + "\nLatitude: " + spoofedLocation.getLatitude());
+            speedValue.setText(String.valueOf(spoofedLocation.getSpeed()));
+
+            // Use the spoofed location for further processing, such as displaying on a map.
+            // For testing purposes, you can use this location for other functionalities as needed.
+
+        } else {
+            locationPermHelper();
+        }
+    }
+ */
     private void showHelp() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         String text = "Pause Updates: Pauses getting the users current location and speed.\n" +
-                "\nGet Location and Speed: Gets the user's location and speed every second.\n";
+                "\nGet Location and Speed: Gets the user's location and speed every second.\n" +
+                "\nAlt Mode: Spoofs the phones location and speed. Developer mode must be on. Also, get location and speed must be running as well.\n";
 
         builder.setMessage(text);
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
@@ -195,8 +231,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             if (locationResult != null) {
                 Location location = locationResult.getLastLocation();
                 if (location != null) {
+                    if(godModeFlag){
+                        double intLong = 0.0000000076, intLat = 0;
+                        longSpoof += intLong;
+                        latSpoof += intLat;
+                        location.setLatitude(longSpoof);
+                        location.setLongitude(latSpoof);
+                        location.setSpeed(4.4704f);
+                    }
                     locationView.setText("Longitude: " + location.getLongitude() + "\nLatitude: " + location.getLatitude());
-
                     float temp2 = location.getSpeed();
                     double temp = speedUnitsCalc(temp2, spinnerVal);
                     speedValue.setText(String.valueOf(temp));
