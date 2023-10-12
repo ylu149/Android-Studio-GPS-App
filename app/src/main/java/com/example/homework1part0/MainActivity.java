@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         locationView = findViewById(R.id.location);
+
         speedValue = findViewById(R.id.speedValue);
 
         /*
@@ -136,6 +137,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 Location location = locationResult.getLastLocation();
                 if (location != null) {
                     locationView.setText("Longitude: " + location.getLongitude() + "\nLatitude: " + location.getLatitude());
+                    speedValue.setText(String.valueOf(location.getSpeed()));
                 }
             }
         }
@@ -274,5 +276,5 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onResume();
         startLocationUpdates();
     }
-    */
+
 }
