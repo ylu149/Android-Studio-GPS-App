@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     boolean pauseTest = true;
 
     private float speed = 0;
+
     private String spinnerVal = "Meters per second";
 
     /*
@@ -188,7 +189,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 Location location = locationResult.getLastLocation();
                 if (location != null) {
                     locationView.setText("Longitude: " + location.getLongitude() + "\nLatitude: " + location.getLatitude());
-                    speedValue.setText(String.valueOf(location.getSpeed()));
+
+                    float temp2 = location.getSpeed();
+                    double temp = speedUnitsCalc(temp2, spinnerVal);
+                    speedValue.setText(String.valueOf(temp));
+
+                    speedColors(temp2);
+
                 }
             }
         }
@@ -205,7 +212,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             speedValue.setTextColor(-16711936); //int color for green
 
         } else if (speedMeters >5 && speedMeters <= 10) {
-            speedValue.setTextColor(-256); //int color for yellow
+            speedValue.setTextColor(-16776961); //int color for blue
         } else {
             speedValue.setTextColor(-65536); //int color for red
         }
