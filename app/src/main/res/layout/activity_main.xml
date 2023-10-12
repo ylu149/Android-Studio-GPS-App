@@ -56,6 +56,16 @@
         android:textSize="20sp"
         android:textStyle="bold" />
 
+    <TextView
+        android:id="@+id/pauseFlag"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="280dp"
+        android:text=""
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -80,7 +90,7 @@
         android:layout_marginEnd="5dp"
         android:layout_marginBottom="75dp"
         android:backgroundTint="@color/black"
-        android:text="Get Location Data"
+        android:text="Get Location and Speed"
         android:id="@+id/getLocation"
         />
 
@@ -93,20 +103,6 @@
         android:layout_marginStart="5dp"
         android:layout_marginEnd="5dp"
         android:layout_marginBottom="125dp"
-        android:backgroundTint="@color/black"
-        android:text="Display Speed Info"
-        android:id="@+id/getSpeed"
-        />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginStart="5dp"
-        android:layout_marginEnd="5dp"
-        android:layout_marginBottom="175dp"
         android:backgroundTint="@color/black"
         android:text="Pause Updates"
         android:id="@+id/pause"

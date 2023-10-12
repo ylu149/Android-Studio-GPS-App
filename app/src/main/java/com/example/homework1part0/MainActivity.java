@@ -25,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
     private final int PERMISSION_ID = 238947;
     private FusedLocationProviderClient mFusedLocationClient;
     TextView locationView, speedValue;
+    boolean pauseTest = true;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,13 +40,6 @@ public class MainActivity extends AppCompatActivity {
             requestPermissions();
         }
 
-
-//        if (!isLocationEnabled()) {
-//            Toast.makeText(this, "Please enable location.", Toast.LENGTH_LONG).show();
-//            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-//            startActivity(intent);
-//        }
-
         Button locButton = findViewById(R.id.getLocation);
         locButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -53,20 +47,22 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Button speedButton = findViewById(R.id.getSpeed);
-        speedButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                startSpeedUpdates();
-            }
-        });
-
-
+        TextView pauseText = findViewById(R.id.pauseFlag);
         Button pauser = findViewById(R.id.pause);
         pauser.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {onClickPause();}
+            public void onClick(View v) {
+                if(!pauseTest){
+                    startLocationUpdates();
+                    pauseText.setText("");
+                }
+                else{
+                    onClickPause();
+                    pauseText.setText("You are now in pause mode. Nothing will be updated. Press resume to continue.");
+                    pauser.setText("Resume Updates");
+                }
+                pauseTest = !pauseTest;
+            }
         });
-
-
     }
 
 
@@ -75,34 +71,16 @@ public class MainActivity extends AppCompatActivity {
         if (isLocationEnabled()) {
             if(mLocationCallback != null){
                 locationView.setText("Getting Location...");
+                speedValue.setText("Getting Speed...");
                 LocationRequest locationRequest = LocationRequest.create();
                 locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
                 locationRequest.setInterval(1000); // 1 seconds
                 locationRequest.setFastestInterval(500); // 0.5 seconds
                 mFusedLocationClient.requestLocationUpdates(locationRequest, mLocationCallback, Looper.getMainLooper());
             }
-//            else{
-//
-//            }
         } else {
             locationPermHelper();
             }
-    }
-
-    @SuppressLint("MissingPermission")
-    private void startSpeedUpdates(){
-        if (isLocationEnabled()) {
-            speedValue.setText("Getting Speed...");
-            /*finish logic here
-            *Prob need to loop the update and display values
-            *Shouldn't put speedValue in LocationCallback method
-                -Will run when button get speed info is clicked
-             */
-            //speedValue.setText(String.valueOf(location.getSpeed()));
-            //speedValue.setText("80.00"); //testing purposes
-        } else {
-            locationPermHelper();
-        }
     }
 
     private void locationPermHelper(){
@@ -145,10 +123,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private void stopLocationUpdates() {
-        if (mLocationCallback != null) {
-            mFusedLocationClient.removeLocationUpdates(mLocationCallback);
-            mLocationCallback = null;
-        }
+        mFusedLocationClient.removeLocationUpdates(mLocationCallback);
     }
 
     protected void onClickPause() {
