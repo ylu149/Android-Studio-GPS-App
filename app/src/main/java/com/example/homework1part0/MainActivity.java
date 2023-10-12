@@ -120,6 +120,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 showHelp();
             }
         });
+
+        Button godButton = findViewById(R.id.godMode);
+        godButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                spoofLocLooper(double latitude = 40, double longitude = 100);
+            }
+        });
     }
 
     private void showHelp() {
