@@ -25,10 +25,14 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener{
     private final int PERMISSION_ID = 238947;
     private FusedLocationProviderClient mFusedLocationClient;
     TextView locationView, speedValue;
+
+    private float speed = 0;
+    private String spinnerVal = "Meters per second";
 
     /*
     Used following source to implement a spinner for selecting different speed
@@ -80,12 +84,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         });
 
+        /*
         speedButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 startSpeedUpdates();
             }
         });
-
+        */
     }
 
 
@@ -137,7 +142,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 Location location = locationResult.getLastLocation();
                 if (location != null) {
                     locationView.setText("Longitude: " + location.getLongitude() + "\nLatitude: " + location.getLatitude());
-                    speedValue.setText(String.valueOf(location.getSpeed()));
+
+                    double temp = speedUnitsCalc(location.getSpeed(), spinnerVal);
+                    speedValue.setText(String.valueOf(temp));
+
+                    speedColors(speed);
+
                 }
             }
         }
@@ -148,6 +158,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     Not sure if this is correct to use, as the requestLocationUpdates is giving errors,
     although the app still runs
      */
+
+    /*
     private void startSpeedUpdates() {
         if (checkPermissions()) {
             if (isLocationEnabled()) {
@@ -166,11 +178,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             requestPermissions();
         }
     }
+     */
 
     /*
     Also copies code for mLocationCallback, with proper adjustments for speedValue instead
      */
 
+    /*
     private LocationCallback speedLocationCallback = new LocationCallback() {
         @Override
         public void onLocationResult(LocationResult locationResult) {
@@ -194,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         }
     };
-
+*/
 
     /*
     Change the speedValue fields color based on the speed calculated
@@ -219,23 +233,24 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     /*
     Commented out for time being while troubleshooting other things
     */
-    private void speedUnitsCalc(float speedMeters, String spinner_choice) {
+    private double speedUnitsCalc(float speedMeters, String spinner_choice) {
 
-        double speedCalc;
+        double speedCalc = 0;
 
         if(spinner_choice == "Miles per Hour") {
             speedCalc = speedMeters * 2.23694;
-            speedValue.setText(String.valueOf(speedCalc));
+
         } else if (spinner_choice == "Kilometers per Hour") {
             speedCalc = speedMeters * 3.60000;
-            speedValue.setText(String.valueOf(speedCalc));
+
         } else if (spinner_choice == "Feet per Second") {
             speedCalc = speedMeters * 3.28084;
-            speedValue.setText(String.valueOf(speedCalc));
+
         } else {
-            speedValue.setText(String.valueOf(speedMeters));
+            speedCalc = speedMeters;
         }
 
+        return speedCalc;
     }
 
 
@@ -256,12 +271,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         Spinner test = (Spinner) parent;
         String test2 = test.getSelectedItem().toString();
-        speedUnitsCalc(2, test2);
+        spinnerVal = test2;
+
     }
 
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
-        speedValue.setText("0.00");
+
     }
 
     /*
@@ -276,5 +292,5 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onResume();
         startLocationUpdates();
     }
-
+*/
 }
