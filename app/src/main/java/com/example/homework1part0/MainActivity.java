@@ -27,21 +27,24 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import android.os.Handler;
+import android.os.SystemClock;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener{
     private final int PERMISSION_ID = 238947;
     private FusedLocationProviderClient mFusedLocationClient;
-    TextView locationView, speedValue;
+    TextView locationView, speedValue, elapsed_time;
+    ;
     boolean pauseTest = true, godModeFlag = false;
     private double longSpoof = 100, latSpoof = 40;
     private float speed = 0;
 
     private String spinnerVal = "Meters per second";
+    private Handler handler = new Handler();
+    private long startTime = 0;
 
-    /*
-    Used following source to implement a spinner for selecting different speed
-    options: https://www.geeksforgeeks.org/spinner-in-android-using-java-with-example/#
-     */
+    //Used following source to implement a spinner for selecting different speed
+    //options: https://www.geeksforgeeks.org/spinner-in-android-using-java-with-example/#
 
     String[] speedChoices = { "Meters per Second", "Miles per Hour",
             "Kilometers per Hour", "Feet per Second"};
@@ -51,8 +54,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         locationView = findViewById(R.id.location);
-
         speedValue = findViewById(R.id.speedValue);
+        elapsed_time = findViewById(R.id.time);
 
         /*
         source for adding spinner: https://developer.android.com/develop/ui/views/components/spinner
@@ -83,6 +86,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             requestPermissions();
         }
 
+        startTime = SystemClock.elapsedRealtime();
+        handler.post(updateTime);
 
         TextView pauseText = findViewById(R.id.pauseFlag);
         Button pauser = findViewById(R.id.pause);
@@ -136,34 +141,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         });
 
     }
-/*
-    private void spoofLocLooper(double latitude, double longitude){
-        double incrementLong = 0.1;
-        double incrementLat = 0.1;
 
-        latitude += incrementLat;
-        longitude += incrementLat;
-        spoofLocationAndSpeed(latitude,longitude,0);
-    }
-    @SuppressLint("MissingPermission")
-    private void spoofLocationAndSpeed(double latitude, double longitude, float speed) {
-        if (isLocationEnabled()) {
-            Location spoofedLocation = new Location(LocationManager.GPS_PROVIDER);
-            spoofedLocation.setLatitude(latitude);
-            spoofedLocation.setLongitude(longitude);
-            //spoofedLocation.setSpeed(speed);
+    private Runnable updateTime = new Runnable() {
+        @Override
+        public void run() {
+            long elapsedTime = SystemClock.elapsedRealtime() - startTime;
+            int minutes = (int) (elapsedTime / 60000);
+            int seconds = (int) (elapsedTime / 1000 % 60);
+            elapsed_time.setText(String.format("Elapsed Time: %02d:%02d", minutes, seconds));
 
-            locationView.setText("Longitude: " + spoofedLocation.getLongitude() + "\nLatitude: " + spoofedLocation.getLatitude());
-            speedValue.setText(String.valueOf(spoofedLocation.getSpeed()));
-
-            // Use the spoofed location for further processing, such as displaying on a map.
-            // For testing purposes, you can use this location for other functionalities as needed.
-
-        } else {
-            locationPermHelper();
+            // Update the time every second
+            handler.postDelayed(this, 1000);
         }
-    }
- */
+    };
+
     private void showHelp() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         String text = "Pause Updates: Pauses getting the users current location and speed.\n" +
@@ -243,8 +234,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     float temp2 = location.getSpeed();
                     double temp = speedUnitsCalc(temp2, spinnerVal);
                     speedValue.setText(String.valueOf(temp));
-
                     speedColors(temp2);
+
+
 
                 }
             }
