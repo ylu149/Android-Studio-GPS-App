@@ -33,7 +33,7 @@ import android.os.SystemClock;
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener{
     private final int PERMISSION_ID = 238947;
     private FusedLocationProviderClient mFusedLocationClient;
-    TextView locationView, speedValue, elapsed_time;
+    TextView locationView, speedValue, elapsed_time, totDist;
     ;
     boolean pauseTest = true, godModeFlag = false;
     private double longSpoof = 100, latSpoof = 40;
@@ -42,6 +42,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private String spinnerVal = "Meters per second";
     private Handler handler = new Handler();
     private long startTime = 0;
+    private Location previousLocation;
+    private double totalDistance = 0.0;
 
     //Used following source to implement a spinner for selecting different speed
     //options: https://www.geeksforgeeks.org/spinner-in-android-using-java-with-example/#
@@ -56,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         locationView = findViewById(R.id.location);
         speedValue = findViewById(R.id.speedValue);
         elapsed_time = findViewById(R.id.time);
-
+        totDist = findViewById(R.id.distance);
         /*
         source for adding spinner: https://developer.android.com/develop/ui/views/components/spinner
         In addition to source above
@@ -100,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 }
                 else{
                     onClickPause();
-                    pauseText.setText("You are now in pause mode. Nothing will be updated. Press resume to continue.");
+                    pauseText.setText("Updates are now paused.");
                     pauser.setText("Resume Updates");
                 }
                 pauseTest = !pauseTest;
@@ -179,6 +181,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             if(mLocationCallback != null){
                 locationView.setText("Getting Location...");
                 speedValue.setText("Getting Speed...");
+                totDist.setText("Getting Elapsed Distance...");
                 LocationRequest locationRequest = LocationRequest.create();
                 locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
                 locationRequest.setInterval(1000); // 1 seconds
@@ -236,7 +239,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     speedValue.setText(String.valueOf(temp));
                     speedColors(temp2);
 
-
+                    if (previousLocation != null) {
+                        float distance = location.distanceTo(previousLocation);
+                        totalDistance += distance;
+                        totDist.setText("Distance Traveled: " + totalDistance);
+                    }
+                    previousLocation = location;
 
                 }
             }
