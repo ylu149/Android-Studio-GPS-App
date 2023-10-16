@@ -239,7 +239,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     speedValue.setText(String.valueOf(temp));
                     speedColors(temp2);
 
-                    if (previousLocation != null) {
+                    if (previousLocation != null && previousLocation != location) {
                         float distance = location.distanceTo(previousLocation);
                         totalDistance += distance;
                         totDist.setText("Distance Traveled: " + totalDistance);
