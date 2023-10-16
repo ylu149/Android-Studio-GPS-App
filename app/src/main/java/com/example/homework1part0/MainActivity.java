@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     TextView locationView, speedValue, elapsed_time, totDist;
     ;
     boolean pauseTest = true, godModeFlag = false;
-    private double longSpoof = 100, latSpoof = 40;
+    private double longSpoof = 100, latSpoof = 40, heightSpoof = 1;
     private float speed = 0;
 
     private String spinnerVal = "Meters per second";
@@ -160,7 +160,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void showHelp() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         String text = "Pause Updates: Pauses getting the users current location and speed.\n" +
-                "\nGet Location and Speed: Gets the user's location and speed every second.\n" +
+                "\nGet Location, Speed, and Height: Gets the user's location, speed, and the height of the device every second.\n" +
                 "\nAlt Mode: Spoofs the phones location and speed. Developer mode must be on. Also, get location and speed must be running as well.\n";
 
         builder.setMessage(text);
@@ -231,9 +231,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         latSpoof += intLat;
                         location.setLatitude(longSpoof);
                         location.setLongitude(latSpoof);
+                        location.setAltitude(heightSpoof);
                         location.setSpeed(4.4704f);
                     }
-                    locationView.setText("Longitude: " + location.getLongitude() + "\nLatitude: " + location.getLatitude());
+                    locationView.setText("Longitude: " + location.getLongitude() + "\nLatitude: "
+                            + location.getLatitude() + "\nHeight: " + location.getAltitude());
                     float temp2 = location.getSpeed();
                     double temp = speedUnitsCalc(temp2, spinnerVal);
                     speedValue.setText(String.valueOf(temp));

@@ -98,7 +98,7 @@
         android:layout_marginEnd="5dp"
         android:layout_marginBottom="75dp"
         android:backgroundTint="@color/black"
-        android:text="Get Location and Speed"
+        android:text="Get Location, Speed, and Height"
         android:id="@+id/getLocation"
         />
 
