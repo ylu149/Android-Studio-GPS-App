@@ -30,26 +30,40 @@ import com.google.android.gms.location.LocationServices;
 import android.os.Handler;
 import android.os.SystemClock;
 
+import java.text.DecimalFormat;
+
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener{
     private final int PERMISSION_ID = 238947;
     private FusedLocationProviderClient mFusedLocationClient;
     TextView locationView, speedValue, elapsed_time, totDist;
     ;
     boolean pauseTest = true, godModeFlag = false;
+
     private double longSpoof = 100, latSpoof = 40, heightSpoof = 1;
     private float speed = 0;
 
-    private String spinnerVal = "Meters per second";
+    private String speedUnitsValue = "Meters per second";
+
+    private String distUnitsValue = "Meters";
+
+    private String timeUnitsValue = "Seconds";
     private Handler handler = new Handler();
     private long startTime = 0;
     private Location previousLocation;
     private double totalDistance = 0.0;
 
-    //Used following source to implement a spinner for selecting different speed
-    //options: https://www.geeksforgeeks.org/spinner-in-android-using-java-with-example/#
+    /*Used following source to implement a spinner for selecting different speed
+    options: https://www.geeksforgeeks.org/spinner-in-android-using-java-with-example/#
+
+    Created String Arrays to hold options for each spinner (Speed Units, Time Units, Distance Units)
+     */
 
     String[] speedChoices = { "Meters per Second", "Miles per Hour",
-            "Kilometers per Hour", "Feet per Second"};
+            "Kilometers per Hour", "Feet per Second", "Minutes per Mile"};
+
+    String[] timeChoices = { "Seconds", "Minutes", "Hours", "Days"};
+
+    String[] distChoices = { "Meters", "Kilometers", "Miles", "Feet"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,27 +74,73 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         elapsed_time = findViewById(R.id.time);
         totDist = findViewById(R.id.distance);
         /*
-        source for adding spinner: https://developer.android.com/develop/ui/views/components/spinner
-        In addition to source above
+        Source for adding spinner: https://developer.android.com/develop/ui/views/components/spinner
+        Creates Spinners for each toggle-able value, and adds an OnItemSelectedListener to each
          */
 
         Spinner speedUnits = findViewById(R.id.speeds_spinner);
-        speedUnits.setOnItemSelectedListener(this);
+        Spinner timeUnits = findViewById(R.id.times_spinner);
+        Spinner distUnits = findViewById(R.id.distance_spinner);
 
-        // Create the array containing the list of choices
-        ArrayAdapter ad
+        speedUnits.setOnItemSelectedListener(this);
+        timeUnits.setOnItemSelectedListener(this);
+        distUnits.setOnItemSelectedListener(this);
+
+        /* Performs the following for the speed spinner:
+        - Creates the array containing the list of speed choices
+        - Sets simple layout resource file for each item of speed spinner
+        - Sets the ArrayAdapter data on the Spinner which binds data to speed spinner
+         */
+
+        ArrayAdapter speedDropdown
                 = new ArrayAdapter(
                 this,
                 android.R.layout.simple_spinner_item,
                 speedChoices);
 
-        // set simple layout resource file for each item of spinner
-        ad.setDropDownViewResource(
+        speedDropdown.setDropDownViewResource(
                 android.R.layout
                         .simple_spinner_dropdown_item);
 
-        // Set the ArrayAdapter data on the Spinner which binds data to spinner
-        speedUnits.setAdapter(ad);
+        speedUnits.setAdapter(speedDropdown);
+
+        /* Performs the following for the time spinner:
+        - Creates the array containing the list of time choices
+        - Sets simple layout resource file for each item of time spinner
+        - Sets the ArrayAdapter data on the Spinner which binds data to time spinner
+         */
+
+        ArrayAdapter timeDropdown
+                = new ArrayAdapter(
+                this,
+                android.R.layout.simple_spinner_item,
+                timeChoices);
+
+        timeDropdown.setDropDownViewResource(
+                android.R.layout
+                        .simple_spinner_dropdown_item);
+
+        timeUnits.setAdapter(timeDropdown);
+
+        /* Performs the following for the distance spinner:
+        - Creates the array containing the list of distance choices
+        - Sets simple layout resource file for each item of distance spinner
+        - Sets the ArrayAdapter data on the Spinner which binds data to distance spinner
+         */
+
+        ArrayAdapter distDropdown
+                = new ArrayAdapter(
+                this,
+                android.R.layout.simple_spinner_item,
+                distChoices);
+
+        distDropdown.setDropDownViewResource(
+                android.R.layout
+                        .simple_spinner_dropdown_item);
+
+        distUnits.setAdapter(distDropdown);
+
+        //End of Spinner section
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -234,10 +294,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         location.setAltitude(heightSpoof);
                         location.setSpeed(4.4704f);
                     }
-                    locationView.setText("Longitude: " + location.getLongitude() + "\nLatitude: "
-                            + location.getLatitude() + "\nHeight: " + location.getAltitude());
+                    locationView.setText("Longitude: " + location.getLongitude() + " degrees" + "\nLatitude: "
+                            + location.getLatitude() + " degrees" + "\nHeight: " + location.getAltitude() + " meters");
                     float temp2 = location.getSpeed();
-                    double temp = speedUnitsCalc(temp2, spinnerVal);
+                    double temp = speedUnitsCalc(temp2, speedUnitsValue);
                     speedValue.setText(String.valueOf(temp));
                     speedColors(temp2);
 
@@ -290,7 +350,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         } else if (spinner_choice == "Feet per Second") {
             speedCalc = speedMeters * 3.28084;
 
-        } else {
+        /*Using 1609 meters/1 mile rather than more precise 1609.34 for calculation
+        calculation value is 1609/60 to 2 decimal places
+         */
+
+        } else if (spinner_choice == "Minutes per Mile") {
+            speedCalc = speedMeters * 26.82;
+
+        }else {
             speedCalc = speedMeters;
         }
 
@@ -312,11 +379,31 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     onNothingSelected Methods for spinners is unfilled
      */
 
+    /*
+    Updated to have multiple spinners, reference:
+    https://stackoverflow.com/questions/13716251/how-to-implements-multiple-spinner-with-different-item-list-and-different-action
+     */
+
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        Spinner test = (Spinner) parent;
-        String test2 = test.getSelectedItem().toString();
-        spinnerVal = test2;
+
+        if(parent.getId() == R.id.speeds_spinner){
+            Spinner test = (Spinner) parent;
+            String test2 = test.getSelectedItem().toString();
+            speedUnitsValue = test2;
+        }
+
+        if(parent.getId() == R.id.times_spinner){
+            Spinner test = (Spinner) parent;
+            String test2 = test.getSelectedItem().toString();
+            timeUnitsValue = test2;
+        }
+
+        if(parent.getId() == R.id.distance_spinner){
+            Spinner test = (Spinner) parent;
+            String test2 = test.getSelectedItem().toString();
+            distUnitsValue = test2;
+        }
 
     }
 
