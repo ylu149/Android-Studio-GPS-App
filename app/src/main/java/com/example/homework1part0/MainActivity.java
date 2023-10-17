@@ -83,6 +83,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private Handler handler = new Handler();
     private long startTime = 0;
+
+    private long pausedTime = 0;
+
+    private long addTime = 0;
+    private long totalStopped = 0;
     private Location previousLocation;
     private double totalDistance = 0.0;
 
@@ -238,29 +243,80 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     }
 
+    /*
+    Trying to implement time while moving, using the following as reference:
+    https://stackoverflow.com/questions/58983710/adding-pause-and-resume-methods-to-stopwatch-class
+    Basing the updates on distance changes since location.getSpeed always gives a positive value
+     */
+
     private Runnable updateTime = new Runnable() {
+
         @Override
         public void run() {
+
             long elapsedTime = SystemClock.elapsedRealtime() - startTime;
             double seconds = (double) (elapsedTime / 1000);
 
-            //Change the displayed time units depending on the Time Spinner value selected
+            if(changes.distanceChange == 0) {
+
+                if (pausedTime == 0) {
+                    pausedTime = SystemClock.elapsedRealtime();
+                }
+
+                if (pausedTime != 0) {
+                    long previousPause = pausedTime;
+                    addTime = (SystemClock.elapsedRealtime() - previousPause);
+                    totalStopped += addTime;
+                    pausedTime = SystemClock.elapsedRealtime();
+                }
+
+            }
+
+            if(changes.distanceChange != 0){
+
+                if(pausedTime != 0){
+                     long previousPause = pausedTime;
+                     addTime = (SystemClock.elapsedRealtime() - previousPause);
+                     totalStopped += addTime;
+                     pausedTime = 0;
+                 }
+
+                if(pausedTime == 0){
+                    addTime = 0;
+                }
+
+            }
+
+            long moveTime = ((SystemClock.elapsedRealtime() - startTime) - totalStopped);
+            double secondsMove = (double) (moveTime / 1000);
+
+            /*
+            Change the displayed time units depending on the Time Spinner value selected
+            Added IF statement to control for Moving Time, currently based on if change in distance,
+            since the location.getSpeed() always gives a number not equal to 0, indicating moving objects
+             */
 
             switch (timeUnitsValue){
                 case "Seconds" :
-                    elapsed_time.setText("Elapsed Time: " + seconds);
+                    elapsed_time.setText("Elapsed Time: " + seconds +"\nMoving Time: " + secondsMove);
                     break;
                 case "Minutes" :
                     double minutes = (double) (seconds / 60);
-                    elapsed_time.setText("Elapsed Time: " + String.format("%.2f", minutes));
+                    double minutesMove = (double) (secondsMove / 60);
+                    elapsed_time.setText("Elapsed Time: " + String.format("%.2f", minutes)
+                            +"\nMoving Time: " + String.format("%.2f", minutesMove));
                     break;
                 case "Hours" :
                     double hours = (double) (seconds / 3600);
-                    elapsed_time.setText("Elapsed Time: " + String.format("%.4f", hours));
+                    double hoursMove = (double) (secondsMove / 3600);
+                    elapsed_time.setText("Elapsed Time: " + String.format("%.4f", hours)
+                            +"\nMoving Time: " + String.format("%.4f", hoursMove));
                     break;
                 case "Days" :
                     double days = (double) (seconds / 86400);
-                    elapsed_time.setText("Elapsed Time: " + String.format("%.5f", days));
+                    double daysMove = (double) (secondsMove / 86400);
+                    elapsed_time.setText("Elapsed Time: " + String.format("%.5f", days)
+                            +"\nMoving Time: " + String.format("%.5f", daysMove));
                     break;
             }
 
@@ -273,7 +329,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         String text = "Pause Updates: Pauses getting the users current location and speed.\n" +
                 "\nGet Location, Speed, and Height: Gets the user's location, speed, and the height of the device every second.\n" +
-                "\nAlt Mode: Spoofs the phones location and speed. Developer mode must be on. Also, get location and speed must be running as well.\n";
+                "\nAlt Mode: Spoofs the phones location and speed. Developer mode must be on. Also, get location and speed must be running as well.\n" +
+                "\nThere are two times: Elapsed Time and Moving Time. Moving time only updates when the app is getting location information";
 
         builder.setMessage(text);
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
@@ -388,6 +445,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                         if (previousLocation != location) {
                             float distance = location.distanceTo(previousLocation);
+                            changes.setDistanceChange(distance);
                             totalDistance += distance;
 
                             switch (distUnitsValue){
@@ -483,6 +541,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     protected void onClickPause() {
         stopLocationUpdates();
+        changes.setDistanceChange(0);
+        changes.setSpeedChange(0);
+        changes.setHeightChange(0);
+        changes.setLatChange(0);
+        changes.setLongChange(0);
     }
 
     /*

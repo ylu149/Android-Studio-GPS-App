@@ -95,7 +95,7 @@
         android:id="@+id/times_spinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="375dp"
+        android:layout_marginTop="395dp"
         android:drawSelectorOnTop="true" />
 
     <TextView
@@ -104,7 +104,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_marginStart="2dp"
-        android:layout_marginTop="400dp"
+        android:layout_marginTop="420dp"
         android:text=""
         android:textSize="20sp"
         android:textStyle="bold" />
@@ -117,7 +117,7 @@
         android:layout_alignParentBottom="true"
         android:layout_marginStart="5dp"
         android:layout_marginEnd="5dp"
-        android:layout_marginBottom="25dp"
+        android:layout_marginBottom="10dp"
         android:backgroundTint="@color/black"
         android:text="Help"
         android:id="@+id/help"
@@ -131,7 +131,7 @@
         android:layout_alignParentBottom="true"
         android:layout_marginStart="5dp"
         android:layout_marginEnd="5dp"
-        android:layout_marginBottom="75dp"
+        android:layout_marginBottom="60dp"
         android:backgroundTint="@color/black"
         android:text="Get Location, Speed, and Height"
         android:id="@+id/getLocation"
@@ -145,7 +145,7 @@
         android:layout_alignParentBottom="true"
         android:layout_marginStart="5dp"
         android:layout_marginEnd="5dp"
-        android:layout_marginBottom="125dp"
+        android:layout_marginBottom="110dp"
         android:backgroundTint="@color/black"
         android:text="Pause Updates"
         android:id="@+id/pause"
@@ -159,7 +159,7 @@
         android:layout_alignParentBottom="true"
         android:layout_marginStart="5dp"
         android:layout_marginEnd="5dp"
-        android:layout_marginBottom="175dp"
+        android:layout_marginBottom="160dp"
         android:backgroundTint="@color/black"
         android:text="Turn God Mode On"
         android:id="@+id/godMode"
