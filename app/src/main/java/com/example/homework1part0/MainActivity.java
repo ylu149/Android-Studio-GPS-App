@@ -32,6 +32,39 @@ import android.os.SystemClock;
 
 import java.text.DecimalFormat;
 
+class ChangeVariableHolder {
+
+    double latChange = 0;
+    double longChange = 0;
+    double heightChange = 0;
+    double speedChange = 0;
+    double distanceChange = 0;
+
+    ChangeVariableHolder() {
+
+    }
+
+    public void setHeightChange(double heightChange) {
+        this.heightChange = heightChange;
+    }
+
+    public void setLatChange(double latChange) {
+        this.latChange = latChange;
+    }
+
+    public void setLongChange(double longChange) {
+        this.longChange = longChange;
+    }
+
+    public void setSpeedChange(double speedChange) {
+        this.speedChange = speedChange;
+    }
+
+    public void setDistanceChange(double distanceChange) {
+        this.distanceChange = distanceChange;
+    }
+}
+
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener{
     private final int PERMISSION_ID = 238947;
     private FusedLocationProviderClient mFusedLocationClient;
@@ -42,11 +75,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private double longSpoof = 100, latSpoof = 40, heightSpoof = 1;
     private float speed = 0;
 
+    ChangeVariableHolder changes = new ChangeVariableHolder();
+
     private String speedUnitsValue = "Meters per second";
-
     private String distUnitsValue = "Meters";
-
     private String timeUnitsValue = "Seconds";
+
     private Handler handler = new Handler();
     private long startTime = 0;
     private Location previousLocation;
@@ -218,15 +252,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     break;
                 case "Minutes" :
                     double minutes = (double) (seconds / 60);
-                    elapsed_time.setText("Elapsed Time: " + minutes);
+                    elapsed_time.setText("Elapsed Time: " + String.format("%.2f", minutes));
                     break;
                 case "Hours" :
                     double hours = (double) (seconds / 3600);
-                    elapsed_time.setText("Elapsed Time: " + hours);
+                    elapsed_time.setText("Elapsed Time: " + String.format("%.4f", hours));
                     break;
                 case "Days" :
                     double days = (double) (seconds / 86400);
-                    elapsed_time.setText("Elapsed Time: " + days);
+                    elapsed_time.setText("Elapsed Time: " + String.format("%.5f", days));
                     break;
             }
 
@@ -302,7 +336,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             super.onLocationResult(locationResult);
             if (locationResult != null) {
                 Location location = locationResult.getLastLocation();
+
                 if (location != null) {
+
+                    //Setting values for when Alt Mode is On
+
                     if(godModeFlag){
                         double intLong = 0.0000000076, intLat = 0;
                         longSpoof += intLong;
@@ -312,34 +350,72 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         location.setAltitude(heightSpoof);
                         location.setSpeed(4.4704f);
                     }
-                    locationView.setText("Longitude: " + location.getLongitude() + " degrees" + "\nLatitude: "
-                            + location.getLatitude() + " degrees" + "\nHeight: " + location.getAltitude() + " meters");
-                    float temp2 = location.getSpeed();
-                    double temp = speedUnitsCalc(temp2, speedUnitsValue);
-                    speedValue.setText(String.valueOf(temp));
-                    speedColors(temp2);
 
-                    if (previousLocation != null && previousLocation != location) {
-                        float distance = location.distanceTo(previousLocation);
-                        totalDistance += distance;
+                    if(previousLocation == null) {
 
-                        switch (distUnitsValue){
-                            case "Meters" :
-                                totDist.setText("Distance Traveled: " + totalDistance);
-                                break;
-                            case "Kilometers" :
-                                double totalKilometers = (double) (totalDistance/ 1000);
-                                totDist.setText("Distance Traveled: " + totalKilometers);
-                                break;
-                            case "Miles" :
-                                double totalMiles = (double) (totalDistance / 1609);
-                                totDist.setText("Distance Traveled: " + totalMiles);
-                                break;
-                            case "Feet" :
-                                double totalFeet = (double) (totalDistance * 3.281);
-                                totDist.setText("Distance Traveled: " + totalFeet);
-                                break;
-                        }
+                        locationView.setText("Longitude: " + String.format("%.4f", location.getLongitude()) + " (" + String.format("%.4f", changes.latChange) +")"
+                                + "\nLatitude: " + String.format("%.4f", location.getLatitude()) + " (" + String.format("%.4f",changes.longChange) +")"
+                                + "\nHeight: " + String.format("%.2f", location.getAltitude()) + " meters " + " (" + String.format("%.2f",changes.heightChange) +")");
+                        float temp2 = location.getSpeed();
+                        double temp = speedUnitsCalc(temp2, speedUnitsValue);
+                        speedValue.setText(String.format("%.2f", temp) + " ("  + String.format("%.2f",changes.speedChange) + ")");
+                        speedColors(temp2);
+
+                    }
+
+                    else {
+
+                        double deltaLat = location.getLatitude() - previousLocation.getLatitude();
+                        changes.setLatChange(deltaLat);
+
+                        double deltaLong = location.getLongitude() - previousLocation.getLongitude();
+                        changes.setLongChange(deltaLong);
+
+                        double deltaHeight = location.getAltitude() - previousLocation.getAltitude();
+                        changes.setHeightChange(deltaHeight);
+
+                        double deltaSpeed = location.getSpeed() - previousLocation.getSpeed();
+                        double deltaSpeedAdj = speedUnitsCalc((float) deltaSpeed, speedUnitsValue);
+                        changes.setSpeedChange(deltaSpeedAdj);
+
+                        locationView.setText("Longitude: " + String.format("%.4f", location.getLongitude()) + " (" + String.format("%.4f", changes.latChange) +")"
+                                + "\nLatitude: " + String.format("%.4f", location.getLatitude()) + " (" + String.format("%.4f",changes.longChange) +")"
+                                + "\nHeight: " + String.format("%.2f", location.getAltitude()) + " meters " + " (" + String.format("%.2f",changes.heightChange) +")");
+                        float temp2 = location.getSpeed();
+                        double temp = speedUnitsCalc(temp2, speedUnitsValue);
+                        speedValue.setText(String.format("%.2f", temp) + " ("  + String.format("%.2f",changes.speedChange) + ")");
+                        speedColors(temp2);
+
+                        if (previousLocation != location) {
+                            float distance = location.distanceTo(previousLocation);
+                            totalDistance += distance;
+
+                            switch (distUnitsValue){
+                                case "Meters" :
+                                    totDist.setText("Distance Traveled: " + String.format("%.2f", totalDistance)
+                                            + " (" + String.format("%.2f", distance) + ")");
+                                    break;
+                                case "Kilometers" :
+                                    double totalKilometers = (double) (totalDistance/ 1000);
+                                    double deltaKil = (double) (distance /1000);
+                                    totDist.setText("Distance Traveled: " + String.format("%.2f", totalKilometers)
+                                            + " (" + String.format("%.2f", deltaKil) + ")");
+                                    break;
+                                case "Miles" :
+                                    double totalMiles = (double) (totalDistance / 1609);
+                                    double deltaMiles = (double) (distance /1609);
+                                    totDist.setText("Distance Traveled: " + String.format("%.2f", totalMiles)
+                                            + " (" + String.format("%.2f", deltaMiles) + ")");
+                                    break;
+                                case "Feet" :
+                                    double totalFeet = (double) (totalDistance * 3.281);
+                                    double deltaFeet = (double) (distance * 3.281);
+                                    totDist.setText("Distance Traveled: " + String.format("%.2f", totalFeet)
+                                            + " (" + String.format("%.2f", deltaFeet) + ")");
+                                    break;
+                            }
+
+                    }
 
                     }
                     previousLocation = location;
@@ -408,12 +484,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     protected void onClickPause() {
         stopLocationUpdates();
     }
-
-    /*
-    onItemSelected updated to call speedUnitsCalc function whenever object is selected in spinner
-    Note that a dummy variable is fed in for speedMeters for now
-    onNothingSelected Methods for spinners is unfilled
-     */
 
     /*
     Updated to have multiple spinners, reference:
