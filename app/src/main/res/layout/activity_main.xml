@@ -159,9 +159,23 @@
         android:layout_alignParentBottom="true"
         android:layout_marginStart="5dp"
         android:layout_marginEnd="5dp"
+        android:layout_marginBottom="225dp"
+        android:backgroundTint="@color/black"
+        android:text="Reset Values"
+        android:id="@+id/reset"
+        />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp"
         android:layout_marginBottom="160dp"
         android:backgroundTint="@color/black"
-        android:text="Turn God Mode On"
+        android:text="Turn Alt Mode On"
         android:id="@+id/godMode"
         />
 

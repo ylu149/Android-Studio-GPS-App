@@ -220,6 +220,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         });
 
+        Button reset = findViewById(R.id.reset);
+        reset.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                totalDistance = 0;
+                startTime = SystemClock.elapsedRealtime();
+            }
+        });
+
         Button helpButtoon = findViewById(R.id.help);
         helpButtoon.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
