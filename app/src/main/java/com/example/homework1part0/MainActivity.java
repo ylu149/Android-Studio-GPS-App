@@ -208,9 +208,27 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         @Override
         public void run() {
             long elapsedTime = SystemClock.elapsedRealtime() - startTime;
-            int minutes = (int) (elapsedTime / 60000);
-            int seconds = (int) (elapsedTime / 1000 % 60);
-            elapsed_time.setText(String.format("Elapsed Time: %02d:%02d", minutes, seconds));
+            double seconds = (double) (elapsedTime / 1000);
+
+            //Change the displayed time units depending on the Time Spinner value selected
+
+            switch (timeUnitsValue){
+                case "Seconds" :
+                    elapsed_time.setText("Elapsed Time: " + seconds);
+                    break;
+                case "Minutes" :
+                    double minutes = (double) (seconds / 60);
+                    elapsed_time.setText("Elapsed Time: " + minutes);
+                    break;
+                case "Hours" :
+                    double hours = (double) (seconds / 3600);
+                    elapsed_time.setText("Elapsed Time: " + hours);
+                    break;
+                case "Days" :
+                    double days = (double) (seconds / 86400);
+                    elapsed_time.setText("Elapsed Time: " + days);
+                    break;
+            }
 
             // Update the time every second
             handler.postDelayed(this, 1000);
@@ -304,7 +322,25 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     if (previousLocation != null && previousLocation != location) {
                         float distance = location.distanceTo(previousLocation);
                         totalDistance += distance;
-                        totDist.setText("Distance Traveled: " + totalDistance);
+
+                        switch (distUnitsValue){
+                            case "Meters" :
+                                totDist.setText("Distance Traveled: " + totalDistance);
+                                break;
+                            case "Kilometers" :
+                                double totalKilometers = (double) (totalDistance/ 1000);
+                                totDist.setText("Distance Traveled: " + totalKilometers);
+                                break;
+                            case "Miles" :
+                                double totalMiles = (double) (totalDistance / 1609);
+                                totDist.setText("Distance Traveled: " + totalMiles);
+                                break;
+                            case "Feet" :
+                                double totalFeet = (double) (totalDistance * 3.281);
+                                totDist.setText("Distance Traveled: " + totalFeet);
+                                break;
+                        }
+
                     }
                     previousLocation = location;
 
