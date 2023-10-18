@@ -6,11 +6,13 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.ColorSpace;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.HandlerThread;
 import android.os.Looper;
 import android.provider.Settings;
 import android.view.View;
@@ -68,8 +70,8 @@ class ChangeVariableHolder {
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener{
     private final int PERMISSION_ID = 238947;
     private FusedLocationProviderClient mFusedLocationClient;
-    TextView locationView, speedValue, elapsed_time, totDist;
-    ;
+    TextView locationView, speedValue, elapsed_time, totDist, pauseText;
+    Button pauser;
     boolean pauseTest = true, godModeFlag = false;
 
     private double longSpoof = 100, latSpoof = 40, heightSpoof = 1;
@@ -83,13 +85,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private Handler handler = new Handler();
     private long startTime = 0;
-
+    private long initTime = 0;
     private long pausedTime = 0;
-
     private long addTime = 0;
     private long totalStopped = 0;
     private Location previousLocation;
     private double totalDistance = 0.0;
+    private HandlerThread locationThread;
+    private Handler locationHandler;
 
     /*Used following source to implement a spinner for selecting different speed
     options: https://www.geeksforgeeks.org/spinner-in-android-using-java-with-example/#
@@ -112,6 +115,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         speedValue = findViewById(R.id.speedValue);
         elapsed_time = findViewById(R.id.time);
         totDist = findViewById(R.id.distance);
+        pauseText = findViewById(R.id.title);
         /*
         Source for adding spinner: https://developer.android.com/develop/ui/views/components/spinner
         Creates Spinners for each toggle-able value, and adds an OnItemSelectedListener to each
@@ -188,20 +192,25 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
 
         startTime = SystemClock.elapsedRealtime();
+        pauser = findViewById(R.id.pause);
+        initTime = System.currentTimeMillis();
+        getSaveData();
         handler.post(updateTime);
 
-        TextView pauseText = findViewById(R.id.pauseFlag);
-        Button pauser = findViewById(R.id.pause);
+        locationThread = new HandlerThread("LocationThread");
+        locationThread.start();
+        locationHandler = new Handler(locationThread.getLooper());
+
         pauser.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if(!pauseTest){
                     startLocationUpdates();
-                    pauseText.setText("");
+                    pauseText.setText("Location App");
                     pauser.setText("Pause Updates");
                 }
                 else{
                     onClickPause();
-                    pauseText.setText("Updates are now paused.");
+                    pauseText.setText("Location App (Paused)");
                     pauser.setText("Resume Updates");
                 }
                 pauseTest = !pauseTest;
@@ -215,6 +224,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     pauseText.setText("");
                     pauser.setText("Pause Updates");
                     pauseTest = !pauseTest;
+                    pauseText.setText("Location App");
                 }
                 startLocationUpdates();
             }
@@ -226,6 +236,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 totalDistance = 0;
                 totalStopped = 0;
                 startTime = SystemClock.elapsedRealtime();
+                initTime = System.currentTimeMillis();
+                totDist.setText("Distance Traveled: 0.0");
             }
         });
 
@@ -263,7 +275,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         @Override
         public void run() {
 
-            long elapsedTime = SystemClock.elapsedRealtime() - startTime;
+            long elapsedTime = System.currentTimeMillis() - initTime;
             double seconds = (double) (elapsedTime / 1000);
 
             if(changes.distanceChange == 0) {
@@ -284,11 +296,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             if(changes.distanceChange != 0){
 
                 if(pausedTime != 0){
-                     long previousPause = pausedTime;
-                     addTime = (SystemClock.elapsedRealtime() - previousPause);
-                     totalStopped += addTime;
-                     pausedTime = 0;
-                 }
+                    long previousPause = pausedTime;
+                    addTime = (SystemClock.elapsedRealtime() - previousPause);
+                    totalStopped += addTime;
+                    pausedTime = 0;
+                }
 
                 if(pausedTime == 0){
                     addTime = 0;
@@ -333,7 +345,21 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             handler.postDelayed(this, 1000);
         }
     };
-
+    private void getSaveData(){
+        SharedPreferences sharedPreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
+        totalDistance = sharedPreferences.getFloat("totalDistance", 0);
+        String lat = sharedPreferences.getString("Latitude", "0");
+        String longi = sharedPreferences.getString("Longitude", "0");
+        String alt = sharedPreferences.getString("Altitude", "0");
+        initTime = sharedPreferences.getLong("InitTime", System.currentTimeMillis());
+        totDist.setText("Distance Traveled: " + String.format("%.2f", totalDistance));
+        locationView.setText("Longitude: " + longi
+                +"\nLatitude: " + lat
+                +"\nHeight: " + alt);
+        pauseText.setText("Location App (Paused)");
+        pauser.setText("Resume Updates");
+        pauseTest = !pauseTest;
+    }
     private void showHelp() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         String text = "Pause Updates: Pauses getting the users current location and speed.\n" +
@@ -356,19 +382,26 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @SuppressLint("MissingPermission")
     private void startLocationUpdates() {
         if (isLocationEnabled()) {
-            if(mLocationCallback != null){
+            if (mLocationCallback != null) {
                 locationView.setText("Getting Location...");
                 speedValue.setText("Getting Speed...");
                 totDist.setText("Getting Elapsed Distance...");
-                LocationRequest locationRequest = LocationRequest.create();
-                locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-                locationRequest.setInterval(1000); // 1 seconds
-                locationRequest.setFastestInterval(500); // 0.5 seconds
-                mFusedLocationClient.requestLocationUpdates(locationRequest, mLocationCallback, Looper.getMainLooper());
+
+                //creating function to multithread
+                locationHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        LocationRequest locationRequest = LocationRequest.create();
+                        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+                        locationRequest.setInterval(1000); // 1 second
+                        locationRequest.setFastestInterval(500); // 0.5 seconds
+                        mFusedLocationClient.requestLocationUpdates(locationRequest, mLocationCallback, Looper.getMainLooper());
+                    }
+                });
             }
         } else {
             locationPermHelper();
-            }
+        }
     }
 
     private void locationPermHelper(){
@@ -482,7 +515,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                                     break;
                             }
 
-                    }
+                        }
 
                     }
                     previousLocation = location;
@@ -590,4 +623,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     }
 
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        SharedPreferences sharedPreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putFloat("totalDistance", (float) totalDistance);
+        editor.putString("Longitude", String.format("%.4f", previousLocation.getLongitude()));
+        editor.putString("Latitude", String.format("%.4f", previousLocation.getLatitude()));
+        editor.putString("Altitude", String.format("%.4f", previousLocation.getAltitude()));
+        editor.putLong("InitTime", initTime);
+        editor.apply();
+        locationThread.quit();
+    }
 }
