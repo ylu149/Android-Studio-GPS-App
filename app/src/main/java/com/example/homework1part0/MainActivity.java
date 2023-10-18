@@ -224,6 +224,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         reset.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 totalDistance = 0;
+                totalStopped = 0;
                 startTime = SystemClock.elapsedRealtime();
             }
         });
