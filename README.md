@@ -3,6 +3,7 @@
 An Android application for tracking location, elapsed time, distance traveled, and more!
 <img width="236" alt="image" src="https://github.com/ylu149/Android-Studio-GPS-App/assets/112187763/6657c4d8-0860-4c33-a6fd-421084f67c4b">
 
+
 ## Features
 
 - Set up Android Studio skeleton code with the following functionalities:
